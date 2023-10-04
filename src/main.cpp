@@ -77,7 +77,7 @@ void loop() {
         dutyCycle += i;
     }
 
-    // ADC code
+    // ADC code ttetetet
 
     int16_t val_0 = ADS.readADC(0);
     int16_t val_1 = ADS.readADC(1);
