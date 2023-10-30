@@ -77,32 +77,21 @@ void setup() {
 
 
 void loop() {
-    // ESC code
-    /*for (int i = 0; i < 163; ++i) {
-        dutyCycle += i;
-    }
-
-    // ADC code
-
+    // Variables for the readout of the adc pins
     int16_t val_0 = ADS.readADC(0);
     int16_t val_1 = ADS.readADC(1);
-    int16_t val_2 = ADS.readADC(2);
-    int16_t val_3 = ADS.readADC(3);
 
-    float f = ADS.toVoltage(2);  // voltage factor
+    // The calibration factor to adjust the voltage reading of the adc
+    //float f = ADS.toVoltage(1/1231);
 
-    // prints out the values of the adc pins
-    Serial.print("\tAnalog0: "); Serial.print(val_0); Serial.print('\t'); Serial.println((double) val_0 / 0x7fff * 6.144);
-    Serial.print("\tAnalog1: "); Serial.print(val_1); Serial.print('\t'); Serial.println(val_1 * f, 3);
-    Serial.print("\tAnalog2: "); Serial.print(val_2); Serial.print('\t'); Serial.println(val_2 * f, 3);
-    Serial.print("\tAnalog3: "); Serial.print(val_3); Serial.print('\t'); Serial.println(val_3 * f, 3);
-    Serial.print("read: ");
-    Serial.println(scale.read());      // print a raw reading from the ADC
-    Serial.println();
+    //The calibration factor for the adc pin reading current
+    //float c = ADS.toVoltage(1/1231);
 
-    delay(1000);*/
-    Serial.print(":loadCellValue:");
-    Serial.println(scale.read());
+    // prints out the corrected values of the adc pins
+    Serial.print("batteryVoltage: "); Serial.print((double) val_0 /1231);
+    Serial.print("circuitCurrent: "); Serial.print((double) val_1 / 19);
+
+    Serial.print(":loadCellValue:"); Serial.println(scale.read());
     delay(50);
 }
 
