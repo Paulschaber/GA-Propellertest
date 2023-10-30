@@ -2,46 +2,51 @@
 #include "../.pio/libdeps/esp32dev/ADS1X15/ADS1X15.h"
 #include "../.pio/libdeps/esp32dev/HX711/src/HX711.h"
 #include "Wire.h"
+#include "LoadcellController.h"
+
+#define BUTTON_PIN 15
+#define ESC_CONTROLL_PIN 26
+#define ESC_CONTROLL_CHANNEL 0
+#define ADC_CLOCK_PIN 16
+#define ADC_DATA_PIN 17
+#define LOADCELL_DATA_PIN 22
+#define LOADCELL_CLOCK_PIN 21
+
 TwoWire adcConnection(0);
 ADS1115 ADS(0x48, &adcConnection);
 
-HX711 loadcell;
+HX711 scale;
+LoadcellController controller(&scale);
+
 int dutyCycle = 204;
 
+
 void setup() {
+    Serial.begin(115200);
+
 // PWM signal for ESC to controll motorspeed
-    ledcAttachPin(26, 0);
-    ledcSetup(0, 50, 16);
-    ledcWrite(0, 204);
+    ledcAttachPin(ESC_CONTROLL_PIN, ESC_CONTROLL_CHANNEL);
+    ledcSetup(ESC_CONTROLL_CHANNEL, 50, 16);
+    ledcWrite(ESC_CONTROLL_CHANNEL, 204);
 
 // Setup for adc measuring the voltage and current passing to/ through the motor
-    loadcell.begin(21, 22);
 
-    Serial.begin(115200);
     Serial.println(__FILE__);
     Serial.print("ADS1X15_LIB_VERSION: ");
     Serial.println(ADS1X15_LIB_VERSION);
-    adcConnection.begin(17, 16);
+    adcConnection.begin(ADC_DATA_PIN, ADC_CLOCK_PIN);
     ADS.begin();
     ADS.setGain(0);
-// Setup for loadcell
-    if (loadcell.is_ready()) {
-        loadcell.set_scale();
-        Serial.println("Tare... remove any weights from the scale.");
-        delay(5000);
-        loadcell.tare();
-        Serial.println("Tare done...");
-        Serial.print("Place a known weight on the scale...");
-        delay(5000);
-        long reading = loadcell.get_units(10);
-        Serial.print("Result: ");
-        Serial.println(reading);
-    }
-    else {
-        Serial.println("HX711 not found.");
-    }
-    delay(1000);
 
+// Setup for loadcell
+
+    scale.begin(LOADCELL_DATA_PIN, LOADCELL_CLOCK_PIN);
+
+    if (scale.is_ready()) {
+        scale.set_scale();
+    } else {
+    Serial.println("HX711 not found.");
+    }
 
     // motor ramp up sequence, including code making measurements
     while (dutyCycle < 6553) {
@@ -55,6 +60,7 @@ void setup() {
 
         float f = ADS.toVoltage(2);  // voltage factor
 
+        // prints out the values of the adc pins
         Serial.print("\tAnalog0: "); Serial.print(val_0); Serial.print('\t'); Serial.println((double) val_0 / 0x7fff * 6.144);
         Serial.print("\tAnalog1: "); Serial.print(val_1); Serial.print('\t'); Serial.println(val_1 * f, 3);
         Serial.print("\tAnalog2: "); Serial.print(val_2); Serial.print('\t'); Serial.println(val_2 * f, 3);
@@ -71,9 +77,8 @@ void setup() {
 
 
 void loop() {
-
     // ESC code
-    for (int i = 0; i < 163; ++i) {
+    /*for (int i = 0; i < 163; ++i) {
         dutyCycle += i;
     }
 
@@ -86,11 +91,18 @@ void loop() {
 
     float f = ADS.toVoltage(2);  // voltage factor
 
+    // prints out the values of the adc pins
     Serial.print("\tAnalog0: "); Serial.print(val_0); Serial.print('\t'); Serial.println((double) val_0 / 0x7fff * 6.144);
     Serial.print("\tAnalog1: "); Serial.print(val_1); Serial.print('\t'); Serial.println(val_1 * f, 3);
     Serial.print("\tAnalog2: "); Serial.print(val_2); Serial.print('\t'); Serial.println(val_2 * f, 3);
     Serial.print("\tAnalog3: "); Serial.print(val_3); Serial.print('\t'); Serial.println(val_3 * f, 3);
+    Serial.print("read: ");
+    Serial.println(scale.read());      // print a raw reading from the ADC
     Serial.println();
 
-    delay(1000);
+    delay(1000);*/
+    Serial.print(":loadCellValue:");
+    Serial.println(scale.read());
+    delay(50);
 }
+
