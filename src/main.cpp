@@ -88,8 +88,8 @@ void loop() {
     //float c = ADS.toVoltage(1/1231);
 
     // prints out the corrected values of the adc pins
-    Serial.print("batteryVoltage: "); Serial.print((double) val_0 /1231);
-    Serial.print("circuitCurrent: "); Serial.print((double) val_1 / 19);
+    Serial.print("batteryVoltage:"); Serial.print((double) val_0 /1231);
+    Serial.print(":circuitCurrent:"); Serial.print((double) val_1 / 19);
 
     Serial.print(":loadCellValue:"); Serial.println(scale.read());
     delay(50);
