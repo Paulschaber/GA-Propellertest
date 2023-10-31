@@ -62,7 +62,7 @@ void setup() {
         Serial.print(":circuitCurrent:"); Serial.print('\t'); Serial.println(val_1 / 19);
 
         // ESC code
-        Serial.print(dutyCycle);
+        //Serial.print(dutyCycle);
         for (int i = 0; i < 163; i++) {
             ledcWrite(ESC_CONTROLL_CHANNEL, dutyCycle);
             dutyCycle += 1;
