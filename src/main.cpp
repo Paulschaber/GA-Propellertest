@@ -58,7 +58,7 @@ void setup() {
 
 
         // prints out the values of the adc pins
-        Serial.print("batteryVoltage:"); Serial.println((double) val_0 /1231);
+        Serial.print("batteryVoltage:"); Serial.print((double) val_0 /1231);
         Serial.print(":circuitCurrent:"); Serial.print('\t'); Serial.println(val_1 / 19);
 
         // ESC code
