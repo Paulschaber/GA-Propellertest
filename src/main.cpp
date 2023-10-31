@@ -4,8 +4,7 @@
 #include "Wire.h"
 #include "LoadcellController.h"
 
-#define BUTTON_PIN 15
-#define ESC_CONTROLL_PIN 26
+#define ESC_CONTROLL_PIN 25
 #define ESC_CONTROLL_CHANNEL 0
 #define ADC_CLOCK_PIN 16
 #define ADC_DATA_PIN 17
@@ -18,16 +17,17 @@ ADS1115 ADS(0x48, &adcConnection);
 HX711 scale;
 LoadcellController controller(&scale);
 
-int dutyCycle = 204;
+int dutyCycle = 3277;
 
 
 void setup() {
     Serial.begin(115200);
 
 // PWM signal for ESC to controll motorspeed
+    delay(5000);
     ledcAttachPin(ESC_CONTROLL_PIN, ESC_CONTROLL_CHANNEL);
     ledcSetup(ESC_CONTROLL_CHANNEL, 50, 16);
-    ledcWrite(ESC_CONTROLL_CHANNEL, 204);
+    ledcWrite(ESC_CONTROLL_CHANNEL, dutyCycle);
 
 // Setup for adc measuring the voltage and current passing to/ through the motor
 
@@ -48,28 +48,24 @@ void setup() {
     Serial.println("HX711 not found.");
     }
 
+    delay(5000);
     // motor ramp up sequence, including code making measurements
     while (dutyCycle < 6553) {
 
         // ADC code
-
         int16_t val_0 = ADS.readADC(0);
         int16_t val_1 = ADS.readADC(1);
-        int16_t val_2 = ADS.readADC(2);
-        int16_t val_3 = ADS.readADC(3);
 
-        float f = ADS.toVoltage(2);  // voltage factor
 
         // prints out the values of the adc pins
-        Serial.print("\tAnalog0: "); Serial.print(val_0); Serial.print('\t'); Serial.println((double) val_0 / 0x7fff * 6.144);
-        Serial.print("\tAnalog1: "); Serial.print(val_1); Serial.print('\t'); Serial.println(val_1 * f, 3);
-        Serial.print("\tAnalog2: "); Serial.print(val_2); Serial.print('\t'); Serial.println(val_2 * f, 3);
-        Serial.print("\tAnalog3: "); Serial.print(val_3); Serial.print('\t'); Serial.println(val_3 * f, 3);
-        Serial.println();
+        Serial.print("batteryVoltage:"); Serial.println((double) val_0 /1231);
+        Serial.print(":circuitCurrent:"); Serial.print('\t'); Serial.println(val_1 / 19);
 
         // ESC code
-        for (int i = 0; i < 163; ++i) {
-            dutyCycle += i;
+        Serial.print(dutyCycle);
+        for (int i = 0; i < 163; i++) {
+            ledcWrite(ESC_CONTROLL_CHANNEL, dutyCycle);
+            dutyCycle += 1;
             delay(1000 / 163);
         }
     }
