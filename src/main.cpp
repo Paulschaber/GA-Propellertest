@@ -23,11 +23,9 @@ int dutyCycle = 3277;
 void setup() {
     Serial.begin(115200);
 
-    // countdown before program starts doing things
-    for (int i = 0; i <= 5; i++) {
-        Serial.println(5-i);
-        delay(1000);
-    }
+
+    // Setup for loadcell
+    scale.begin(LOADCELL_DATA_PIN, LOADCELL_CLOCK_PIN);
 
     // PWM signal for ESC to controll motorspeed
     ledcAttachPin(ESC_CONTROLL_PIN, ESC_CONTROLL_CHANNEL);
@@ -39,8 +37,13 @@ void setup() {
     ADS.begin();
     ADS.setGain(0);
 
-    // Setup for loadcell
-    scale.begin(LOADCELL_DATA_PIN, LOADCELL_CLOCK_PIN);
+    controller.calib();
+
+    // countdown before program starts doing things
+    for (int i = 0; i <= 5; i++) {
+        Serial.println(5-i);
+        delay(1000);
+    }
 
     // Motor ramp up sequence, including code making measurements
     while (dutyCycle < 6553) {
@@ -49,6 +52,8 @@ void setup() {
         int16_t val_0 = ADS.readADC(0);
         int16_t val_1 = ADS.readADC(1);
 
+        // Prints out the motor speed in percent
+        Serial.print("motorSpeed%:"); Serial.print(dutyCycle / 6553 * 100);
 
         // Prints out the values of the adc pins
         Serial.print("batteryVoltage:"); Serial.print((double) val_0 /1231);
@@ -79,8 +84,11 @@ void loop() {
     //The calibration factor for the adc pin reading current
     //float c = ADS.toVoltage(1/1231);
 
-    // prints out the corrected values of the adc pins
-    Serial.print("batteryVoltage:"); Serial.print((double) val_0 /1231);
+    // Prints out the motor speed in percent
+    Serial.print("motorSpeed%:"); Serial.print(dutyCycle / 6553 * 100);
+
+    // Prints out the corrected values of the adc pins
+    Serial.print(":batteryVoltage:"); Serial.print((double) val_0 /1231);
     Serial.print(":circuitCurrent:"); Serial.print((double) val_1 / 19);
 
     // Prints out the value given by the loadcell
