@@ -45,6 +45,15 @@ void setup() {
         delay(1000);
     }
 
+    // Labels for the data that will be printed
+    Serial.print("motorSpeed%");
+    Serial.print(";");
+    Serial.print("batteryVoltage");
+    Serial.print(";");
+    Serial.print("circuitCurrent");
+    Serial.print(";");
+    Serial.println("loadCellValue");
+
     // Motor ramp up sequence, including code making measurements
     while (dutyCycle < 6553) {
 
@@ -53,14 +62,19 @@ void setup() {
         int16_t val_1 = ADS.readADC(1);
 
         // Prints out the motor speed in percent
-        Serial.print("motorSpeed%:"); Serial.print(dutyCycle / 6553 * 100);
+        Serial.print(dutyCycle / 6553 * 100);
+
+        Serial.print(";");  // Spacer for splitting the data into separate columns
 
         // Prints out the values of the adc pins
-        Serial.print("batteryVoltage:"); Serial.print((double) val_0 /1231);
-        Serial.print(":circuitCurrent:"); Serial.print((double) val_1 / 19);
+        Serial.print((double) val_0 /1231);
+        Serial.print(";");
+        Serial.print((double) val_1 / 19);
+
+        Serial.print(";");
 
         // Prints out the value given by the loadcell
-        Serial.print(":loadCellValue:"); Serial.println(scale.read());
+        Serial.println(scale.read());
 
         // ESC code
         //Serial.print(dutyCycle);
@@ -85,14 +99,20 @@ void loop() {
     //float c = ADS.toVoltage(1/1231);
 
     // Prints out the motor speed in percent
-    Serial.print("motorSpeed%:"); Serial.print(dutyCycle / 6553 * 100);
+    Serial.print(dutyCycle / 6553 * 100);
+
+    Serial.print(";");  // Spacer for splitting the data into separate columns
+
 
     // Prints out the corrected values of the adc pins
-    Serial.print(":batteryVoltage:"); Serial.print((double) val_0 /1231);
-    Serial.print(":circuitCurrent:"); Serial.print((double) val_1 / 19);
+    Serial.print((double) val_0 /1231);
+    Serial.print(";");
+    Serial.print((double) val_1 / 19);
+
+    Serial.print(";");
 
     // Prints out the value given by the loadcell
-    Serial.print(":loadCellValue:"); Serial.println(scale.read());
+    Serial.println(scale.read());
     delay(50);
 }
 
