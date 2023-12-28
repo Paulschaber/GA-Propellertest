@@ -10,13 +10,17 @@ void LoadcellController::calib() {
             scale->set_scale();
             Serial.println("Tare... remove any weights from the scale.");
             delay(5000);
-            scale->tare();
+            scale->tare(50);
             Serial.println("Tare done...");
             Serial.print("Place a known weight on the scale...");
             delay(5000);
-            long reading = scale->get_units(10);
+            long reading = scale->get_units(50);
             Serial.print("Result: ");
             Serial.println(reading);
+            //Serial.print("please enter your calibration factor (your known weight divided by 'Result')");
+           // while(!Serial.available()){}
+          //  string calibration_input = Serial.readStringUntil('\n');
+         //   float calibration_value = strtof(calibration_input, nullptr);
         } else {
             Serial.println("HX711 not found.");
         }
