@@ -42,7 +42,7 @@ void motorRamp(int topRSpeedPCT){
         Serial.print(";");
 
         // Prints out the value given by the loadcell
-        Serial.println(scale.read());
+        Serial.println(scale.get_value());
 
         // ESC code
         for (int i = 0; i < 3; i++) {
@@ -118,7 +118,7 @@ void loop() {
     Serial.print(";");
 
     // Prints out the value given by the loadcell
-    Serial.println(scale.read());
+    Serial.println(scale.get_value());
     delay(50);
 }
 
