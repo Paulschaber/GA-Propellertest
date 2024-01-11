@@ -19,6 +19,39 @@ LoadcellController controller(&scale);
 
 int dutyCycle = 3277;
 
+void motorRamp(int topRSpeedPCT){
+    // The esc is controlled by a 50Hz signal with a pulsewidth between 5% and 10%.
+    // When expressed in 16bit that pulsewidth is between 3277 and 6553 bits.
+    int bitval = 3277 + topRSpeedPCT / 100.0 * 3277.0;
+    while (dutyCycle < bitval) {
+
+        // ADC code
+        int16_t val_0 = ADS.readADC(0);
+        int16_t val_1 = ADS.readADC(1);
+
+        // Prints out the motor speed in percent
+        Serial.print((dutyCycle - 3277) / 3277.0 * 100.0);
+
+        Serial.print(";");  // Spacer for splitting the data into separate columns
+
+        // Prints out the values of the adc pins
+        Serial.print(val_0 / 1231.0);
+        Serial.print(";");
+        Serial.print(val_1 / 19.0);
+
+        Serial.print(";");
+
+        // Prints out the value given by the loadcell
+        Serial.println(scale.read());
+
+        // ESC code
+        for (int i = 0; i < 3; i++) {
+            ledcWrite(ESC_CONTROLL_CHANNEL, dutyCycle);
+            dutyCycle += 1;
+            delay(50 / 3);
+        }
+    }
+}
 
 void setup() {
     Serial.begin(115200);
@@ -55,36 +88,9 @@ void setup() {
     Serial.println("loadCellValue");
 
     // Motor ramp up sequence, including code making measurements
-    while (dutyCycle < 6553) {
-
-        // ADC code
-        int16_t val_0 = ADS.readADC(0);
-        int16_t val_1 = ADS.readADC(1);
-
-        // Prints out the motor speed in percent
-        Serial.print(dutyCycle / 6553 * 100);
-
-        Serial.print(";");  // Spacer for splitting the data into separate columns
-
-        // Prints out the values of the adc pins
-        Serial.print((double) val_0 /1231);
-        Serial.print(";");
-        Serial.print((double) val_1 / 19);
-
-        Serial.print(";");
-
-        // Prints out the value given by the loadcell
-        Serial.println(scale.read());
-
-        // ESC code
-        //Serial.print(dutyCycle);
-        for (int i = 0; i < 3; i++) {
-            ledcWrite(ESC_CONTROLL_CHANNEL, dutyCycle);
-            dutyCycle += 1;
-            delay(50 / 3);
-        }
-    }
+    motorRamp(50);
 }
+
 
 
 void loop() {
@@ -99,15 +105,15 @@ void loop() {
     //float c = ADS.toVoltage(1/1231);
 
     // Prints out the motor speed in percent
-    Serial.print(dutyCycle / 6553 * 100);
+    Serial.print((dutyCycle - 3277) / 3277.0 * 100.0);
 
     Serial.print(";");  // Spacer for splitting the data into separate columns
 
 
     // Prints out the corrected values of the adc pins
-    Serial.print((double) val_0 /1231);
+    Serial.print(val_0 / 1231.0);
     Serial.print(";");
-    Serial.print((double) val_1 / 19);
+    Serial.print(val_1 / 19.0);
 
     Serial.print(";");
 
