@@ -53,6 +53,40 @@ void motorRamp(int topRSpeedPCT){
     }
 }
 
+void rampUntilThrust(int thrustValue, int maxRotationPCT){
+    //Checks that motor is set to spin slower than a certain value expressed in percent.
+    //This is to avoid uncontrolled acceleration of the motor that could be caused from bad load cell readings.
+    if (dutyCycle < 6553 / 100 * maxRotationPCT) {
+        while (scale.get_value() < thrustValue){
+            // ADC code
+            int16_t val_0 = ADS.readADC(0);
+            int16_t val_1 = ADS.readADC(1);
+
+            // Prints out the motor speed in percent
+            Serial.print((dutyCycle - 3277) / 3277.0 * 100.0);
+
+            Serial.print(";");  // Spacer for splitting the data into separate columns
+
+            // Prints out the values of the adc pins
+            Serial.print(val_0 / 1231.0);
+            Serial.print(";");
+            Serial.print(val_1 / 19.0);
+
+            Serial.print(";");
+
+            // Prints out the value given by the loadcell
+            Serial.println(scale.get_value());
+
+            // ESC code
+            for (int i = 0; i < 3; i++) {
+                ledcWrite(ESC_CONTROLL_CHANNEL, dutyCycle);
+                dutyCycle += 1;
+                delay(50 / 3);
+            }
+        }
+    }
+}
+
 void setup() {
     Serial.begin(115200);
 
@@ -123,9 +157,6 @@ void setup() {
     dutyCycle = 3277;
 }
 
-
-
 void loop() {
 
 }
-
