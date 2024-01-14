@@ -89,36 +89,43 @@ void setup() {
 
     // Motor ramp up sequence, including code making measurements
     motorRamp(50);
+
+    // Continues measurements for set time (t[minutes] must be multiplied with sample rate)
+    int t;
+    for (t = 0; t < 60 * 20; t++){
+        // Variables for the readout of the adc pins
+        int16_t val_0 = ADS.readADC(0);
+        int16_t val_1 = ADS.readADC(1);
+
+        // The calibration factor to adjust the voltage reading of the adc
+        //float f = ADS.toVoltage(1/1231);
+
+        //The calibration factor for the adc pin reading current
+        //float c = ADS.toVoltage(1/1231);
+
+        // Prints out the motor speed in percent
+        Serial.print((dutyCycle - 3277) / 3277.0 * 100.0);
+
+        Serial.print(";");  // Spacer for splitting the data into separate columns
+
+
+        // Prints out the corrected values of the adc pins
+        Serial.print(val_0 / 1231.0);
+        Serial.print(";");
+        Serial.print(val_1 / 19.0);
+
+        Serial.print(";");
+
+        // Prints out the value given by the loadcell
+        Serial.println(scale.get_value());
+        delay(50);
+    }
+    dutyCycle = 3277;
 }
 
 
 
 void loop() {
-    // Variables for the readout of the adc pins
-    int16_t val_0 = ADS.readADC(0);
-    int16_t val_1 = ADS.readADC(1);
 
-    // The calibration factor to adjust the voltage reading of the adc
-    //float f = ADS.toVoltage(1/1231);
-
-    //The calibration factor for the adc pin reading current
-    //float c = ADS.toVoltage(1/1231);
-
-    // Prints out the motor speed in percent
-    Serial.print((dutyCycle - 3277) / 3277.0 * 100.0);
-
-    Serial.print(";");  // Spacer for splitting the data into separate columns
-
-
-    // Prints out the corrected values of the adc pins
-    Serial.print(val_0 / 1231.0);
-    Serial.print(";");
-    Serial.print(val_1 / 19.0);
-
-    Serial.print(";");
-
-    // Prints out the value given by the loadcell
-    Serial.println(scale.get_value());
-    delay(50);
 }
 
