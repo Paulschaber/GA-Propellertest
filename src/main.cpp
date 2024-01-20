@@ -10,9 +10,6 @@
 #define ADC_DATA_PIN 17
 #define LOADCELL_DATA_PIN 22
 #define LOADCELL_CLOCK_PIN 21
-#define VOLTAGE_CORRECTION (val_0 * 3.0 / 5380.0 + 0.02)
-#define CURRENT_CORRECTION (val_1 * 61.0 / 28050.0 + 0.02)
-
 
 TwoWire adcConnection(0);
 ADS1115 ADS(0x48, &adcConnection);
@@ -38,9 +35,9 @@ void motorRamp(int topRSpeedPCT){
         Serial.print(";");  // Spacer for splitting the data into separate columns
 
         // Prints out the values of the adc pins
-        Serial.print(VOLTAGE_CORRECTION);
+        Serial.print(val_0 / 1231.0);
         Serial.print(";");
-        Serial.print(CURRENT_CORRECTION);
+        Serial.print(val_1);
 
         Serial.print(";");
 
@@ -71,9 +68,9 @@ void rampUntilThrust(int thrustValue, int maxRotationPCT){
             Serial.print(";");  // Spacer for splitting the data into separate columns
 
             // Prints out the values of the adc pins
-            Serial.print(val_0);
+            Serial.print(val_0 / 1231.0);
             Serial.print(";");
-            Serial.print(val_1);
+            Serial.print(val_1 / 19.0);
 
             Serial.print(";");
 
@@ -105,7 +102,7 @@ void setup() {
     // Setup for adc measuring the voltage and current passing to/ through the motor
     adcConnection.begin(ADC_DATA_PIN, ADC_CLOCK_PIN);
     ADS.begin();
-    ADS.setGain(16);
+    ADS.setGain(0);
 
     controller.calib();
 
@@ -147,7 +144,7 @@ void setup() {
 
 
         // Prints out the corrected values of the adc pins
-        Serial.print(val_0);
+        Serial.print(val_0 / 1231.0);
         Serial.print(";");
         Serial.print(val_1);
 
