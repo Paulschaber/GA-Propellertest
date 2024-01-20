@@ -71,9 +71,9 @@ void rampUntilThrust(int thrustValue, int maxRotationPCT){
             Serial.print(";");  // Spacer for splitting the data into separate columns
 
             // Prints out the values of the adc pins
-            Serial.print(val_0);
+            Serial.print(VOLTAGE_CORRECTION);
             Serial.print(";");
-            Serial.print(val_1);
+            Serial.print(CURRENT_CORRECTION);
 
             Serial.print(";");
 
@@ -147,9 +147,9 @@ void setup() {
 
 
         // Prints out the corrected values of the adc pins
-        Serial.print(val_0);
+        Serial.print(VOLTAGE_CORRECTION);
         Serial.print(";");
-        Serial.print(val_1);
+        Serial.print(CURRENT_CORRECTION);
 
         Serial.print(";");
 
