@@ -10,6 +10,9 @@
 #define ADC_DATA_PIN 17
 #define LOADCELL_DATA_PIN 22
 #define LOADCELL_CLOCK_PIN 21
+#define VOLTAGE_CORRECTION (val_0 * 3.0 / 5380.0 + 0.02)
+#define CURRENT_CORRECTION (val_1 * 61.0 / 28050.0 + 0.02)
+
 
 TwoWire adcConnection(0);
 ADS1115 ADS(0x48, &adcConnection);
@@ -17,7 +20,7 @@ ADS1115 ADS(0x48, &adcConnection);
 HX711 scale;
 LoadcellController controller(&scale);
 
-int dutyCycle = 3277;
+int dutyCycle = 3550;
 
 void motorRamp(int topRSpeedPCT){
     // The esc is controlled by a 50Hz signal with a pulsewidth between 5% and 10%.
@@ -35,9 +38,9 @@ void motorRamp(int topRSpeedPCT){
         Serial.print(";");  // Spacer for splitting the data into separate columns
 
         // Prints out the values of the adc pins
-        Serial.print(val_0 / 1231.0);
+        Serial.print(VOLTAGE_CORRECTION);
         Serial.print(";");
-        Serial.print(val_1 / 19.0);
+        Serial.print(CURRENT_CORRECTION);
 
         Serial.print(";");
 
@@ -68,9 +71,9 @@ void rampUntilThrust(int thrustValue, int maxRotationPCT){
             Serial.print(";");  // Spacer for splitting the data into separate columns
 
             // Prints out the values of the adc pins
-            Serial.print(val_0 / 1231.0);
+            Serial.print(val_0);
             Serial.print(";");
-            Serial.print(val_1 / 19.0);
+            Serial.print(val_1);
 
             Serial.print(";");
 
@@ -102,7 +105,7 @@ void setup() {
     // Setup for adc measuring the voltage and current passing to/ through the motor
     adcConnection.begin(ADC_DATA_PIN, ADC_CLOCK_PIN);
     ADS.begin();
-    ADS.setGain(0);
+    ADS.setGain(16);
 
     controller.calib();
 
@@ -122,11 +125,11 @@ void setup() {
     Serial.println("loadCellValue");
 
     // Motor ramp up sequence, including code making measurements
-    motorRamp(50);
+    motorRamp(75);
 
     // Continues measurements for set time (t[minutes] must be multiplied with sample rate)
     int t;
-    for (t = 0; t < 60 * 20; t++){
+    for (t = 0; t < 5 * 20; t++){
         // Variables for the readout of the adc pins
         int16_t val_0 = ADS.readADC(0);
         int16_t val_1 = ADS.readADC(1);
@@ -144,9 +147,9 @@ void setup() {
 
 
         // Prints out the corrected values of the adc pins
-        Serial.print(val_0 / 1231.0);
+        Serial.print(val_0);
         Serial.print(";");
-        Serial.print(val_1 / 19.0);
+        Serial.print(val_1);
 
         Serial.print(";");
 
