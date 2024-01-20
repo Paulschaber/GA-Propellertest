@@ -17,7 +17,7 @@ ADS1115 ADS(0x48, &adcConnection);
 HX711 scale;
 LoadcellController controller(&scale);
 
-int dutyCycle = 3277;
+int dutyCycle = 3550;
 
 void motorRamp(int topRSpeedPCT){
     // The esc is controlled by a 50Hz signal with a pulsewidth between 5% and 10%.
@@ -37,7 +37,7 @@ void motorRamp(int topRSpeedPCT){
         // Prints out the values of the adc pins
         Serial.print(val_0 / 1231.0);
         Serial.print(";");
-        Serial.print(val_1 / 19.0);
+        Serial.print(val_1);
 
         Serial.print(";");
 
@@ -122,11 +122,11 @@ void setup() {
     Serial.println("loadCellValue");
 
     // Motor ramp up sequence, including code making measurements
-    motorRamp(50);
+    motorRamp(75);
 
     // Continues measurements for set time (t[minutes] must be multiplied with sample rate)
     int t;
-    for (t = 0; t < 60 * 20; t++){
+    for (t = 0; t < 5 * 20; t++){
         // Variables for the readout of the adc pins
         int16_t val_0 = ADS.readADC(0);
         int16_t val_1 = ADS.readADC(1);
@@ -146,7 +146,7 @@ void setup() {
         // Prints out the corrected values of the adc pins
         Serial.print(val_0 / 1231.0);
         Serial.print(";");
-        Serial.print(val_1 / 19.0);
+        Serial.print(val_1);
 
         Serial.print(";");
 
