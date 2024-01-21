@@ -12,6 +12,7 @@
 #define LOADCELL_CLOCK_PIN 21
 #define VOLTAGE_CORRECTION (val_0 * 3.0 / 5380.0 + 0.02)
 #define CURRENT_CORRECTION (val_1 * 61.0 / 28050.0 + 0.02)
+#define WEIGHT_CORRECTION (scale.get_value() * 2 / 90)
 
 
 TwoWire adcConnection(0);
@@ -45,7 +46,7 @@ void motorRamp(int topRSpeedPCT){
         Serial.print(";");
 
         // Prints out the value given by the loadcell
-        Serial.println(scale.get_value());
+        Serial.println(WEIGHT_CORRECTION);
 
         // ESC code
         for (int i = 0; i < 3; i++) {
@@ -56,11 +57,11 @@ void motorRamp(int topRSpeedPCT){
     }
 }
 
-void rampUntilThrust(int thrustValue, int maxRotationPCT){
+void rampUntilThrust(int thrustValue, int maxRotationPCT){ // thrustValue in grams
     //Checks that motor is set to spin slower than a certain value expressed in percent.
     //This is to avoid uncontrolled acceleration of the motor that could be caused from bad load cell readings.
     if (dutyCycle < 6553 / 100 * maxRotationPCT) {
-        while (scale.get_value() < thrustValue){
+        while (WEIGHT_CORRECTION < thrustValue){
             // ADC code
             int16_t val_0 = ADS.readADC(0);
             int16_t val_1 = ADS.readADC(1);
@@ -78,7 +79,7 @@ void rampUntilThrust(int thrustValue, int maxRotationPCT){
             Serial.print(";");
 
             // Prints out the value given by the loadcell
-            Serial.println(scale.get_value());
+            Serial.println(WEIGHT_CORRECTION);
 
             // ESC code
             for (int i = 0; i < 3; i++) {
@@ -122,7 +123,7 @@ void setup() {
     Serial.print(";");
     Serial.print("circuitCurrent");
     Serial.print(";");
-    Serial.println("loadCellValue");
+    Serial.println("weight");
 
     // Motor ramp up sequence, including code making measurements
     motorRamp(75);
@@ -154,7 +155,7 @@ void setup() {
         Serial.print(";");
 
         // Prints out the value given by the loadcell
-        Serial.println(scale.get_value());
+        Serial.println(WEIGHT_CORRECTION);
         delay(50);
     }
     dutyCycle = 3277;
