@@ -126,7 +126,8 @@ void setup() {
     Serial.println("weight");
 
     // Motor ramp up sequence, including code making measurements
-    motorRamp(75);
+    //motorRamp(75);
+    rampUntilThrust(300, 50);
 
     // Continues measurements for set time (t[minutes] must be multiplied with sample rate)
     int t;
