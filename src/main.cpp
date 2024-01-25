@@ -23,36 +23,40 @@ LoadcellController controller(&scale);
 
 int dutyCycle = 3550;
 
+void printMeasurements() {
+    // ADC code
+    int16_t val_0 = ADS.readADC(0);
+    int16_t val_1 = ADS.readADC(1);
+
+    // print time
+    Serial.print(millis());
+    Serial.print(";");
+
+    // Prints out the motor speed in percent
+    Serial.print((dutyCycle - 3277) / 3277.0 * 100.0);
+
+    Serial.print(";");  // Spacer for splitting the data into separate columns
+
+    // Prints out the values of the adc pins
+    Serial.print(VOLTAGE_CORRECTION);
+    Serial.print(";");
+    Serial.print(CURRENT_CORRECTION);
+
+    Serial.print(";");
+
+    // Prints out the value given by the loadcell
+    Serial.print(scale.get_value());
+    Serial.print(";");
+    Serial.println(WEIGHT_CORRECTION);
+}
+
 void motorRamp(int topRSpeedPCT) {
     // The esc is controlled by a 50Hz signal with a pulsewidth between 5% and 10%.
     // When expressed in 16bit that pulsewidth is between 3277 and 6553 bits.
     int bitval = 3277 + topRSpeedPCT / 100.0 * 3277.0;
     while (dutyCycle < bitval) {
 
-        // ADC code
-        int16_t val_0 = ADS.readADC(0);
-        int16_t val_1 = ADS.readADC(1);
-
-        // print time
-        Serial.print(millis());
-        Serial.print(";");
-
-        // Prints out the motor speed in percent
-        Serial.print((dutyCycle - 3277) / 3277.0 * 100.0);
-
-        Serial.print(";");  // Spacer for splitting the data into separate columns
-
-        // Prints out the values of the adc pins
-        Serial.print(VOLTAGE_CORRECTION);
-        Serial.print(";");
-        Serial.print(CURRENT_CORRECTION);
-
-        Serial.print(";");
-
-        // Prints out the value given by the loadcell
-        Serial.print(scale.get_value());
-        Serial.print(";");
-        Serial.println(WEIGHT_CORRECTION);
+        printMeasurements();
 
         // ESC code
         for (int i = 0; i < 3; i++) {
@@ -69,29 +73,7 @@ void rampUntilThrust(int thrustValue, int maxRotationPCT) { // thrustValue in gr
     if (dutyCycle > 3277.0 + 3277.0 / 100.0 * maxRotationPCT) return;
 
     while (WEIGHT_CORRECTION < thrustValue) {
-        // ADC code
-        int16_t val_0 = ADS.readADC(0);
-        int16_t val_1 = ADS.readADC(1);
-
-        // print time
-        Serial.print(millis());
-        Serial.print(";");
-
-        // Prints out the motor speed in percent
-        Serial.print((dutyCycle - 3277) / 3277.0 * 100.0);
-
-        Serial.print(";");  // Spacer for splitting the data into separate columns
-
-        // Prints out the values of the adc pins
-        Serial.print(VOLTAGE_CORRECTION);
-        Serial.print(";");
-        Serial.print(CURRENT_CORRECTION);
-        Serial.print(";");
-
-        // Prints out the value given by the loadcell
-        Serial.print(scale.get_value());
-        Serial.print(";");
-        Serial.println(WEIGHT_CORRECTION);
+        printMeasurements();
 
         // ESC code
         for (int i = 0; i < 3; i++) {
@@ -149,36 +131,8 @@ void setup() {
     // Continues measurements for set time (t[minutes] must be multiplied with sample rate)
     int t;
     for (t = 0; t < 5 * 20; t++) {
-        // Variables for the readout of the adc pins
-        int16_t val_0 = ADS.readADC(0);
-        int16_t val_1 = ADS.readADC(1);
+        printMeasurements();
 
-        // The calibration factor to adjust the voltage reading of the adc
-        //float f = ADS.toVoltage(1/1231);
-
-        //The calibration factor for the adc pin reading current
-        //float c = ADS.toVoltage(1/1231);
-
-        // print time
-        Serial.print(millis());
-        Serial.print(";");
-        // Prints out the motor speed in percent
-        Serial.print((dutyCycle - 3277) / 3277.0 * 100.0);
-
-        Serial.print(";");  // Spacer for splitting the data into separate columns
-
-
-        // Prints out the corrected values of the adc pins
-        Serial.print(VOLTAGE_CORRECTION);
-        Serial.print(";");
-        Serial.print(CURRENT_CORRECTION);
-
-        Serial.print(";");
-
-        // Prints out the value given by the loadcell
-        Serial.print(scale.get_value());
-        Serial.print(";");
-        Serial.println(WEIGHT_CORRECTION);
         delay(50);
     }
     dutyCycle = 3277;
