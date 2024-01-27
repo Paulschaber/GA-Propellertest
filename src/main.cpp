@@ -2,7 +2,7 @@
 #include "../.pio/libdeps/esp32dev/ADS1X15/ADS1X15.h"
 #include "../.pio/libdeps/esp32dev/HX711/src/HX711.h"
 #include "Wire.h"
-#include "LoadcellController.h"
+//#include "LoadcellController.h"
 
 #define ESC_CONTROLL_PIN 25
 #define ESC_CONTROLL_CHANNEL 0
@@ -19,14 +19,17 @@ TwoWire adcConnection(0);
 ADS1115 ADS(0x48, &adcConnection);
 
 HX711 scale;
-LoadcellController controller(&scale);
+//LoadcellController controller(&scale);
+double tare_value;
 
 int dutyCycle = 3550;
 
 void printMeasurements() {
     // ADC code
-    int16_t val_0 = ADS.readADC(0);
-    int16_t val_1 = ADS.readADC(1);
+    //int16_t val_0 = ADS.readADC(0);
+    //int16_t val_1 = ADS.readADC(1);
+
+
 
     // print time
     Serial.print(millis());
@@ -38,16 +41,16 @@ void printMeasurements() {
     Serial.print(";");  // Spacer for splitting the data into separate columns
 
     // Prints out the values of the adc pins
-    Serial.print(VOLTAGE_CORRECTION);
+    Serial.print(ADS.readADC(0) * 3.0 / 5380.0 + 0.02);
     Serial.print(";");
-    Serial.print(CURRENT_CORRECTION);
+    Serial.print(ADS.readADC(1) * 61.0 / 28050.0 + 0.02);
 
     Serial.print(";");
 
     // Prints out the value given by the loadcell
-    Serial.print(scale.get_value());
-    Serial.print(";");
-    Serial.println(WEIGHT_CORRECTION);
+    //Serial.print(scale.get_value());
+    //Serial.print(";");
+    Serial.println((scale.read() - tare_value) * 2 / 90);
 }
 
 void motorRamp(int topRSpeedPCT) {
@@ -90,7 +93,6 @@ void rampUntilThrust(int thrustValue, int maxRotationPCT) { // thrustValue in gr
 void setup() {
     Serial.begin(115200);
 
-
     // Setup for loadcell
     scale.begin(LOADCELL_DATA_PIN, LOADCELL_CLOCK_PIN);
 
@@ -104,13 +106,16 @@ void setup() {
     ADS.begin();
     ADS.setGain(16);
 
-    controller.calib();
+    //controller.calib();
+    Serial.println("please wait for the load cell to tare");
+    tare_value = scale.read_average(50);
 
     // countdown before program starts doing things
     for (int i = 5; i >= 0; i--) {
         Serial.println(i);
         delay(1000);
     }
+
 
     // Labels for the data that will be printed
     Serial.print("time");
