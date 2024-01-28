@@ -12,11 +12,11 @@ void LoadcellController::calib() {
             delay(5000);
             scale->tare(50);
             Serial.println("Tare done...");
-            Serial.print("Place a known weight on the scale...");
-            delay(5000);
-            long reading = scale->get_units(50);
-            Serial.print("Result: ");
-            Serial.println(reading);
+            //Serial.print("Place a known weight on the scale...");
+            //delay(5000);
+            //long reading = scale->get_units(50);
+            //Serial.print("Result: ");
+            //Serial.println(reading);
             //Serial.print("please enter your calibration factor (your known weight divided by 'Result')");
            // while(!Serial.available()){}
           //  string calibration_input = Serial.readStringUntil('\n');

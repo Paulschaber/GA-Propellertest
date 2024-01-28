@@ -12,7 +12,7 @@
 #define LOADCELL_CLOCK_PIN 21
 #define VOLTAGE_CORRECTION (val_0 * 3.0 / 5380.0 + 0.02)
 #define CURRENT_CORRECTION (val_1 * 61.0 / 28050.0 + 0.02)
-#define WEIGHT_CORRECTION (scale.get_value() * 2 / 90)
+#define WEIGHT_CORRECTION (fmax((scale.read() - tare_value) / 45.0, 0))
 
 
 TwoWire adcConnection(0);
@@ -24,7 +24,7 @@ double tare_value;
 
 int dutyCycle = 3550;
 
-void printMeasurements() {
+void printMeasurements(long scaleValue) {
     // ADC code
     //int16_t val_0 = ADS.readADC(0);
     //int16_t val_1 = ADS.readADC(1);
@@ -50,7 +50,7 @@ void printMeasurements() {
     // Prints out the value given by the loadcell
     //Serial.print(scale.get_value());
     //Serial.print(";");
-    Serial.println((scale.read() - tare_value) * 2 / 90);
+    Serial.println(fmax((scaleValue - tare_value) / 45.0, 0));
 }
 
 void motorRamp(int topRSpeedPCT) {
@@ -58,8 +58,8 @@ void motorRamp(int topRSpeedPCT) {
     // When expressed in 16bit that pulsewidth is between 3277 and 6553 bits.
     int bitval = 3277 + topRSpeedPCT / 100.0 * 3277.0;
     while (dutyCycle < bitval) {
-
-        printMeasurements();
+        long scaleValue = scale.read();
+        printMeasurements(scaleValue);
 
         // ESC code
         for (int i = 0; i < 3; i++) {
@@ -75,8 +75,23 @@ void rampUntilThrust(int thrustValue, int maxRotationPCT) { // thrustValue in gr
     //This is to avoid uncontrolled acceleration of the motor that could be caused from bad load cell readings.
     if (dutyCycle > 3277.0 + 3277.0 / 100.0 * maxRotationPCT) return;
 
-    while (WEIGHT_CORRECTION < thrustValue) {
-        printMeasurements();
+    long scaleBuf[10];
+    for (int i = 0; i < 10; i++) {
+        scaleBuf[i] = 0;
+    }
+
+    while (dutyCycle < 3277.0 + 3277.0 / 100.0 * maxRotationPCT) {
+        //Serial.println("I rolig funktion");
+        long scaleValue = scale.read();
+        long scaleAvg = scaleValue;
+        for (int i = 8; i >= 0; i--) {
+            scaleBuf[i + 1] = scaleBuf[i];
+            scaleAvg += scaleBuf[i];
+        }
+        scaleBuf[0] = scaleValue;
+        if ((scaleAvg / 10.0 - tare_value) / 45.0 >= thrustValue) break;
+        //Serial.println((scaleAvg / 10.0 - tare_value) / 45.0);
+        printMeasurements(scaleValue);
 
         // ESC code
         for (int i = 0; i < 3; i++) {
@@ -85,7 +100,7 @@ void rampUntilThrust(int thrustValue, int maxRotationPCT) { // thrustValue in gr
             delay(50 / 3);
         }
 
-        if (dutyCycle > 3277.0 + 3277.0 / 100.0 * maxRotationPCT) break;
+        //if (dutyCycle > 3277.0 + 3277.0 / 100.0 * maxRotationPCT) break;
 
     }
 }
@@ -132,16 +147,19 @@ void setup() {
 
     // Motor ramp up sequence, including code making measurements
     //motorRamp(75);
-    rampUntilThrust(300, 50);
+    rampUntilThrust(600, 90);
 
     // Continues measurements for set time (t[minutes] must be multiplied with sample rate)
     int t;
     for (t = 0; t < 5 * 20; t++) {
-        printMeasurements();
+        long scaleValue = scale.read();
+        printMeasurements(scaleValue);
 
         delay(50);
     }
     dutyCycle = 3277;
+    ledcWrite(ESC_CONTROLL_CHANNEL, dutyCycle);
+    Serial.println("Done");
 }
 
 void loop() {
