@@ -10,7 +10,7 @@
 #define ADC_DATA_PIN 17
 #define LOADCELL_DATA_PIN 22
 #define LOADCELL_CLOCK_PIN 21
-#define I_CORRECTION_FOR_BAT (213.0 / 112.0)
+#define I_CORRECTION_FOR_BAT (2 / 3)
 #define VOLTAGE_CORRECTION (val_0 * 3.0 / 5380.0 + 0.02)
 #define CURRENT_CORRECTION (val_1 * 61.0 / 28050.0 + 0.02)
 #define WEIGHT_CORRECTION (fmax((scale.read() - tare_value) / 45.0, 0))
